@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ColorPicker } from "@/components/color-picker";
 import { IconPicker } from "@/components/icon-picker";
+import { Icon } from "@/components/lucide-icon";
 import type { CategoryKind, ParentOption } from "@/components/categories/categories-view";
 import type { CategoryInput } from "@/lib/zod-schemas/category";
 import { createCategory, updateCategory } from "@/app/(app)/categorias/actions";
@@ -32,6 +33,8 @@ interface Props {
   defaultKind?: CategoryKind;
   defaultParentId?: string | null;
 }
+
+const FORM_ID = "category-form";
 
 export function CategoryFormDialog({
   open,
@@ -95,20 +98,32 @@ export function CategoryFormDialog({
       onClose={onClose}
       title={category ? "Editar categoria" : "Nova categoria"}
       description="Categorias organizam receitas e despesas; subcategorias detalham."
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" form={FORM_ID} disabled={saving || !name.trim()}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {category ? "Salvar" : "Criar"}
+          </Button>
+        </div>
+      }
     >
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form id={FORM_ID} onSubmit={onSubmit} className="space-y-5">
         {/* Tipo (income/expense) */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>Tipo</Label>
           {kindLocked ? (
             <div
               className={cn(
-                "rounded-md border px-3 py-2 text-sm font-medium",
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium",
                 kind === "income"
-                  ? "border-success bg-success/10 text-success"
-                  : "border-destructive bg-destructive/10 text-destructive",
+                  ? "border-success/30 bg-success/10 text-success"
+                  : "border-destructive/30 bg-destructive/10 text-destructive",
               )}
             >
+              <Lock className="h-3 w-3 opacity-70" />
               {kind === "income" ? "Receita" : "Despesa"}
             </div>
           ) : (
@@ -117,9 +132,10 @@ export function CategoryFormDialog({
                 <button
                   key={k}
                   type="button"
+                  aria-pressed={kind === k}
                   onClick={() => setKind(k)}
                   className={cn(
-                    "rounded-md border px-3 py-2 text-sm font-medium transition",
+                    "rounded-md border px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     kind === k
                       ? k === "income"
                         ? "border-success bg-success/10 text-success"
@@ -133,7 +149,7 @@ export function CategoryFormDialog({
             </div>
           )}
           {kindLocked && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground/80">
               {parentId
                 ? "Subcategoria segue o tipo da categoria-mãe."
                 : "O tipo não pode ser alterado após a criação (afeta subcategorias e lançamentos vinculados)."}
@@ -141,45 +157,46 @@ export function CategoryFormDialog({
           )}
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label htmlFor="cat-name">Nome</Label>
           <Input id="cat-name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>Categoria-mãe</Label>
           <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
             {parentName ?? "Nenhuma (categoria principal)"}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground/80">
             {parentName
               ? "Definida ao criar a subcategoria; para mudar, exclua e recrie."
               : "Categorias principais não têm mãe. Use o \"+\" dentro dela para criar uma subcategoria."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
+        <div className="space-y-3">
+          {/* Preview ao vivo */}
+          <div className="flex items-center gap-3 rounded-md border bg-muted/20 px-3 py-2.5">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white"
+              style={{ backgroundColor: color }}
+            >
+              <Icon name={icon} className="h-5 w-5" />
+            </div>
+            <span className="truncate text-sm font-medium">{name.trim() || "Nome da categoria"}</span>
+          </div>
+
+          <div className="space-y-2">
             <Label>Cor</Label>
             <ColorPicker value={color} onChange={setColor} />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Ícone</Label>
             <IconPicker value={icon} onChange={setIcon} />
           </div>
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
-
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={saving || !name.trim()}>
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            {category ? "Salvar" : "Criar"}
-          </Button>
-        </div>
       </form>
     </Dialog>
   );

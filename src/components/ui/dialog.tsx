@@ -11,10 +11,17 @@ interface DialogProps {
   description?: string;
   children: React.ReactNode;
   className?: string;
+  /**
+   * Rodapé fixo (ex.: botões Cancelar/Salvar). Quando informado, o modal vira um
+   * layout de 3 blocos (cabeçalho fixo / corpo com scroll interno / rodapé fixo),
+   * útil para conteúdo longo que não deve estourar a viewport. Quando omitido,
+   * mantém o comportamento antigo (modal inteiro rola como um bloco só).
+   */
+  footer?: React.ReactNode;
 }
 
 /** Modal leve e acessível (fecha no Esc e no clique fora). */
-export function Dialog({ open, onClose, title, description, children, className }: DialogProps) {
+export function Dialog({ open, onClose, title, description, children, className, footer }: DialogProps) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -28,6 +35,22 @@ export function Dialog({ open, onClose, title, description, children, className 
 
   if (!open) return null;
 
+  const closeButton = (
+    <button
+      onClick={onClose}
+      aria-label="Fechar"
+      className="shrink-0 rounded-md p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <X className="h-5 w-5" />
+    </button>
+  );
+  const headerText = (
+    <div>
+      <h2 className="text-lg font-semibold">{title}</h2>
+      {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-black/50 animate-in fade-in" onClick={onClose} />
@@ -36,24 +59,29 @@ export function Dialog({ open, onClose, title, description, children, className 
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-t-2xl border bg-card p-6 shadow-lg animate-in slide-in-from-bottom-4 sm:max-w-md sm:rounded-lg",
+          "relative z-10 w-full rounded-t-2xl border bg-card shadow-lg animate-in slide-in-from-bottom-4 sm:max-w-md sm:rounded-lg",
+          footer ? "flex max-h-[90vh] flex-col overflow-hidden" : "max-h-[90vh] overflow-y-auto p-6",
           className,
         )}
       >
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold">{title}</h2>
-            {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Fechar"
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
+        {footer ? (
+          <>
+            <div className="flex items-start justify-between gap-4 border-b px-6 py-5">
+              {headerText}
+              {closeButton}
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>
+            <div className="border-t px-6 py-4">{footer}</div>
+          </>
+        ) : (
+          <>
+            <div className="mb-4 flex items-start justify-between gap-4">
+              {headerText}
+              {closeButton}
+            </div>
+            {children}
+          </>
+        )}
       </div>
     </div>
   );
