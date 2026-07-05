@@ -1,0 +1,11 @@
+-- Tipos enumerados do dominio financeiro.
+create type account_type as enum ('checking','savings','cash','credit_card','investment');
+create type category_kind as enum ('income','expense');
+create type transaction_type as enum ('income','expense','transfer');
+create type transaction_status as enum ('pending','cleared');
+create type recurrence_frequency as enum ('daily','weekly','monthly','yearly');
+create type invoice_status as enum ('open','closed','paid');
+create type goal_status as enum ('active','achieved','archived');
+create type investment_entry_type as enum ('deposit','withdraw');
+create type import_source as enum ('ofx','csv');
+create type notification_type as enum ('bill_due','budget_exceeded','goal_achieved','general');
