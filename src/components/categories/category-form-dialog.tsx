@@ -64,6 +64,9 @@ export function CategoryFormDialog({
   }, [open, category]);
 
   const parentName = parentId ? parents.find((p) => p.id === parentId)?.name : null;
+  // Trava o tipo ao editar (mudar afetaria subcategorias/lançamentos já vinculados)
+  // e ao criar/editar subcategoria (tipo sempre herdado da mãe).
+  const kindLocked = !!category || !!parentId;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,30 +100,43 @@ export function CategoryFormDialog({
         {/* Tipo (income/expense) */}
         <div className="space-y-1.5">
           <Label>Tipo</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {(["expense", "income"] as CategoryKind[]).map((k) => (
-              <button
-                key={k}
-                type="button"
-                disabled={!!parentId}
-                onClick={() => setKind(k)}
-                className={cn(
-                  "rounded-md border px-3 py-2 text-sm font-medium transition",
-                  parentId && "cursor-not-allowed opacity-60",
-                  kind === k
-                    ? k === "income"
-                      ? "border-success bg-success/10 text-success"
-                      : "border-destructive bg-destructive/10 text-destructive"
-                    : "text-muted-foreground hover:bg-accent",
-                )}
-              >
-                {k === "income" ? "Receita" : "Despesa"}
-              </button>
-            ))}
-          </div>
-          {parentId && (
+          {kindLocked ? (
+            <div
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm font-medium",
+                kind === "income"
+                  ? "border-success bg-success/10 text-success"
+                  : "border-destructive bg-destructive/10 text-destructive",
+              )}
+            >
+              {kind === "income" ? "Receita" : "Despesa"}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {(["expense", "income"] as CategoryKind[]).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setKind(k)}
+                  className={cn(
+                    "rounded-md border px-3 py-2 text-sm font-medium transition",
+                    kind === k
+                      ? k === "income"
+                        ? "border-success bg-success/10 text-success"
+                        : "border-destructive bg-destructive/10 text-destructive"
+                      : "text-muted-foreground hover:bg-accent",
+                  )}
+                >
+                  {k === "income" ? "Receita" : "Despesa"}
+                </button>
+              ))}
+            </div>
+          )}
+          {kindLocked && (
             <p className="text-xs text-muted-foreground">
-              Subcategoria segue o tipo da categoria-mãe.
+              {parentId
+                ? "Subcategoria segue o tipo da categoria-mãe."
+                : "O tipo não pode ser alterado após a criação (afeta subcategorias e lançamentos vinculados)."}
             </p>
           )}
         </div>
