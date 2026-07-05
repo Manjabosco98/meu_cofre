@@ -7,7 +7,6 @@ import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { ColorPicker } from "@/components/color-picker";
 import { IconPicker } from "@/components/icon-picker";
 import type { CategoryKind, ParentOption } from "@/components/categories/categories-view";
@@ -64,7 +63,7 @@ export function CategoryFormDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, category]);
 
-  const parentOptions = parents.filter((p) => p.kind === kind && p.id !== category?.id);
+  const parentName = parentId ? parents.find((p) => p.id === parentId)?.name : null;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -128,17 +127,14 @@ export function CategoryFormDialog({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="cat-parent">Categoria-mãe (opcional)</Label>
-          <Select id="cat-parent" value={parentId} onChange={(e) => setParentId(e.target.value)}>
-            <option value="">Nenhuma (categoria principal)</option>
-            {parentOptions.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </Select>
+          <Label>Categoria-mãe</Label>
+          <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+            {parentName ?? "Nenhuma (categoria principal)"}
+          </div>
           <p className="text-xs text-muted-foreground">
-            Escolha uma categoria-mãe para criar uma subcategoria.
+            {parentName
+              ? "Definida ao criar a subcategoria; para mudar, exclua e recrie."
+              : "Categorias principais não têm mãe. Use o \"+\" dentro dela para criar uma subcategoria."}
           </p>
         </div>
 
