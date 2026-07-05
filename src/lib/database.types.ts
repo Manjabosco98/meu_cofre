@@ -1071,6 +1071,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: { account_id: string; balance_cents: number }[]
       }
+      get_consolidated_balance: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_invoice_totals: {
         Args: Record<PropertyKey, never>
         Returns: { invoice_id: string; total_cents: number }[]

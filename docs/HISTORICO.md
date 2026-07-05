@@ -4,6 +4,38 @@
 
 ---
 
+## 2026-07-05 — Deploy Vercel + correção do saldo consolidado no Dashboard
+
+### Deploy
+- App publicado em `https://financas-pessoais-seven-sandy.vercel.app`
+- Variáveis de ambiente configuradas no Vercel (NEXT_PUBLIC_SUPABASE_URL, ANON_KEY, SITE_URL)
+- Supabase URL Configuration atualizada com o domínio do Vercel
+
+### Bug: saldo consolidado divergente entre Dashboard e Contas
+- **Dashboard** somava TODAS as contas via `get_account_balances()` (incluindo cartão de crédito com saldo negativo)
+- **Contas** somava apenas contas bancárias e subtraía reservado em metas
+- Resultado: Dashboard R$ 473,30 vs Contas R$ 529,80
+
+### Correção
+- Nova RPC `get_consolidated_balance()`: soma saldo das contas bancárias (exclui credit_card) menos valor reservado em metas vinculadas
+- Migration 0021: `supabase/migrations/0021_consolidated_balance_fn.sql`
+- `database.types.ts`: adicionado tipo da nova RPC
+- `query-fns.ts`: `fetchDashboardData` usa `get_consolidated_balance()` em vez de somar `get_account_balances()`
+- `dashboard/page.tsx`: usa `data.consolidated` em vez de calcular a partir de `data.balances`
+
+### Arquivos modificados
+- `supabase/migrations/0021_consolidated_balance_fn.sql` (novo)
+- `src/lib/database.types.ts` (adicionado tipo get_consolidated_balance)
+- `src/lib/query-fns.ts` (fetchDashboardData usa nova RPC)
+- `src/app/(app)/dashboard/page.tsx` (usa data.consolidated)
+
+### Verificação
+- `tsc --noEmit` limpo (0 erros)
+- `npm run build` OK (26 rotas)
+- Deploy automático no Vercel via git push
+
+---
+
 ## 2026-07-05 — Otimização de performance: auth, React Query, índices
 
 ### Problema

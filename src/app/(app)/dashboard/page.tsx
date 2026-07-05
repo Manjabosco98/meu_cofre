@@ -40,7 +40,7 @@ export default async function DashboardPage({
   const rangeStart = new Date(now.getFullYear(), now.getMonth() - (meses - 1), 1);
   const todayStr = now.toISOString().slice(0, 10);
 
-  const consolidated = (data.balances ?? []).reduce((acc: number, b: { balance_cents: number }) => acc + b.balance_cents, 0);
+  const consolidated = data.consolidated;
 
   const buckets: { key: string; label: string; income: number; expense: number }[] = [];
   for (let i = 0; i < meses; i++) {

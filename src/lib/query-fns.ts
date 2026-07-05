@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/server";
  */
 
 export type DashboardData = {
-  balances: { account_id: string; balance_cents: number }[];
+  consolidated: number;
   accountsCount: number;
   trendTx: { date: string; type: string; amount_cents: number }[];
   monthExpenses: { amount_cents: number; category_id: string | null }[];
@@ -36,14 +36,14 @@ export async function fetchDashboardData(meses: number): Promise<DashboardData> 
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
   const [
-    { data: balances },
+    { data: consolidated },
     { count: accountsCount },
     { data: trendTx },
     { data: monthExpenses },
     { data: categories },
     { data: upcoming },
   ] = await Promise.all([
-    supabase.rpc("get_account_balances"),
+    supabase.rpc("get_consolidated_balance"),
     supabase.from("accounts").select("id", { count: "exact", head: true }).eq("archived", false),
     supabase
       .from("transactions")
@@ -68,7 +68,7 @@ export async function fetchDashboardData(meses: number): Promise<DashboardData> 
   ]);
 
   return {
-    balances: balances ?? [],
+    consolidated: consolidated ?? 0,
     accountsCount: accountsCount ?? 0,
     trendTx: trendTx ?? [],
     monthExpenses: monthExpenses ?? [],
