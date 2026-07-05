@@ -102,12 +102,11 @@ export function CategoryFormDialog({
               <button
                 key={k}
                 type="button"
-                onClick={() => {
-                  setKind(k);
-                  setParentId("");
-                }}
+                disabled={!!parentId}
+                onClick={() => setKind(k)}
                 className={cn(
                   "rounded-md border px-3 py-2 text-sm font-medium transition",
+                  parentId && "cursor-not-allowed opacity-60",
                   kind === k
                     ? k === "income"
                       ? "border-success bg-success/10 text-success"
@@ -119,6 +118,11 @@ export function CategoryFormDialog({
               </button>
             ))}
           </div>
+          {parentId && (
+            <p className="text-xs text-muted-foreground">
+              Subcategoria segue o tipo da categoria-mãe.
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">
